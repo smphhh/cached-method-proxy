@@ -6,3 +6,5 @@
 /node_modules
 /typings.json
 /tsconfig.json
+**/__tests__/**/*
+**/*.js.map
