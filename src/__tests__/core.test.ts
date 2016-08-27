@@ -42,6 +42,11 @@ class TestClass1 {
         return "_" + a.name;
     }
 
+    getPrimitiveWithNonSerializableArgument(a: { a: number, foo: (b: string) => string }) {
+        this.callCount++;
+        return a.foo('hou') + a.a;
+    }
+
     getComplexValue() {
         this.callCount++;
         return { a: 1, b: [2, 'a'] };
@@ -113,6 +118,25 @@ describe("Cached method proxy", function () {
 
         expect(v1).to.equal(testObject.getPrimitiveWithComplexArgument({ name: 'a', list: [1, 2] }));
         expect(v2).to.equal(testObject.getPrimitiveWithComplexArgument({ name: 'a', list: [1, 3] }));
+    });
+
+    it("should vary by non-serializable arguments", function () {
+        let arg1 = { a: 1, foo(b: string) { return "_" + b; } };
+        let arg2 = { a: 1, foo(b: string) { return "_" + b; } };
+
+        let v1 = proxy.getPrimitiveWithNonSerializableArgument(arg1);
+        let v2 = proxy.getPrimitiveWithNonSerializableArgument(arg2);
+
+        expect(testObject.getCallCount()).to.equal(2);
+
+        let v3 = proxy.getPrimitiveWithNonSerializableArgument(arg1);
+
+        expect(testObject.getCallCount()).to.equal(2);
+
+        let expectedValue = testObject.getPrimitiveWithNonSerializableArgument(arg1);
+        expect(v1).to.equal(expectedValue);
+        expect(v2).to.equal(expectedValue);
+        expect(v3).to.equal(expectedValue);        
     });
 
     it("should proxy method calls returning complex values", function () {
