@@ -165,6 +165,23 @@ describe("Cached method proxy", function () {
         //expect(v3Promise).to.not.equal(v1Promise);
         expect(testObject.getCallCount()).to.equal(2);
     });
+
+    it("should allow excluding methods", function () {
+        proxy = new CachedMethodProxy(testObject, { exclude: [testObject.getPrimitiveWithoutArguments]}).proxy;
+
+        let v1 = proxy.getPrimitiveWithoutArguments();
+        let v2 = proxy.getPrimitiveWithoutArguments();
+
+        expect(testObject.getCallCount()).to.equal(2);
+
+        proxy.getComplexValue();
+        proxy.getComplexValue();
+
+        expect(testObject.getCallCount()).to.equal(3);
+
+        expect(v1).to.equal(testObject.getPrimitiveWithoutArguments());
+        expect(v2).to.equal(v1);
+    });
 });
 
 

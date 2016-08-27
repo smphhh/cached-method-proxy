@@ -5,6 +5,10 @@ import * as Immutable from 'immutable';
 let isPromise = require('is-promise');
 let LRU = require('lru-cache');
 
+export interface Options {
+    exclude?: Function[]
+}
+
 export class CachedFunctionProxy<T extends Function> {
     private cache: any;
     private cacheKeySeq = 0;
@@ -74,10 +78,14 @@ export class CachedFunctionProxy<T extends Function> {
 
 export class CachedMethodProxy<T> {
     private methodProxies: Map<string | number | Symbol, CachedFunctionProxy<any>>;
+    private excludedMethods: Set<Function>;
 
     constructor(
-        private proxiedObject: T
+        private proxiedObject: T,
+        private options: Options = {}
     ) {
+        this.excludedMethods = new Set(options.exclude);
+
         let self = this;
 
         this.methodProxies = new Map();
@@ -86,6 +94,9 @@ export class CachedMethodProxy<T> {
             get(target, propKey, receiver) {
                 const origProp = target[propKey];
                 if (typeof origProp !== 'function') {
+                    return origProp;
+
+                } else if (!self.checkInclusion(origProp)) {
                     return origProp;
                 }
 
@@ -104,6 +115,10 @@ export class CachedMethodProxy<T> {
 
     clear() {
         this.methodProxies.forEach(proxy => proxy.clear());
+    }
+
+    private checkInclusion(method: Function) {
+        return !this.excludedMethods.has(method);
     }
 }
 
