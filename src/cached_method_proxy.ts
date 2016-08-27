@@ -1,5 +1,5 @@
 
-let Bluebird = require('Bluebird');
+let Bluebird = require('bluebird');
 let debug = require('debug')('cached-method-proxy');
 import * as Immutable from 'immutable';
 let isPromise = require('is-promise');
