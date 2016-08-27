@@ -61,11 +61,13 @@ class TestClass1 {
 
 describe("Cached method proxy", function () {
     let testObject: TestClass1;
+    let cache: CachedMethodProxy<TestClass1>;
     let proxy: TestClass1;
 
     beforeEach(function () {
         testObject = new TestClass1();
-        proxy = new CachedMethodProxy(testObject).proxy;
+        cache = new CachedMethodProxy(testObject);
+        proxy = cache.proxy;
     });
 
     it("should proxy method calls with no arguments returning a primitive", function () {
@@ -181,6 +183,21 @@ describe("Cached method proxy", function () {
 
         expect(v1).to.equal(testObject.getPrimitiveWithoutArguments());
         expect(v2).to.equal(v1);
+    });
+
+    it("should allow clearing the cache", function () {
+        let v1 = proxy.getComplexValue();
+
+        cache.clear();
+
+        let v2 = proxy.getComplexValue();
+
+        expect(testObject.getCallCount()).to.equal(2);
+
+        let expectedValue = testObject.getComplexValue();
+        expect(v1).to.deep.equal(expectedValue);
+        expect(v2).to.deep.equal(expectedValue);
+        expect(v1).to.not.equal(v2);
     });
 });
 
